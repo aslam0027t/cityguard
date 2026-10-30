@@ -1,0 +1,33 @@
+# Python virtual environment
+.venv/
+venv/
+ENV/
+
+# Environment Variables & Secrets
+.env
+*.env
+.env.*
+!.env.example
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.pytest_cache/
+
+# Local SQLite database
+data/
+*.db
+*.sqlite
+*.sqlite3
+
+# Sentence-transformers and HuggingFace cache
+.cache/
+hf_cache/
+
+# Streamlit config / cache
+.streamlit/
+
+# OS artifacts
+.DS_Store
+Thumbs.db
