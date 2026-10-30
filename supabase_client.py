@@ -7,8 +7,13 @@ local SQLite storage and a cloud Supabase PostgreSQL database.
 from typing import Any, Dict, List, Optional, Tuple
 import json
 
-from config import SUPABASE_KEY, SUPABASE_URL, DB_BACKEND
+import os
+import config
 import database as local_db
+
+SUPABASE_KEY = getattr(config, "SUPABASE_KEY", os.getenv("SUPABASE_KEY", ""))
+SUPABASE_URL = getattr(config, "SUPABASE_URL", os.getenv("SUPABASE_URL", ""))
+DB_BACKEND = getattr(config, "DB_BACKEND", os.getenv("DB_BACKEND", "sqlite"))
 
 try:
     from supabase import Client, create_client
