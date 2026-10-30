@@ -1,6 +1,7 @@
-# CivicAction: 5-Minute Hackathon Demonstration Script
+# CityGuard 🛡️: 5-Minute Hackathon Demonstration Script
+### Mangaluru City Corporation (MCC) • Smart Civic Action
 
-This walkthrough guides evaluators and judges through the complete citizen-to-officer-to-citizen lifecycle of CivicAction in 5 minutes.
+This walkthrough guides evaluators and judges through the complete citizen-to-officer-to-citizen lifecycle of CityGuard in 5 minutes across Mangaluru's municipal wards.
 
 ---
 
@@ -9,7 +10,7 @@ This walkthrough guides evaluators and judges through the complete citizen-to-of
    ```powershell
    .venv\Scripts\streamlit run app.py
    ```
-2. In the sidebar under **Demo Controls**, click **🌱 Load Synthetic Demo Data (40 Reports)** if not already seeded.
+2. In the sidebar under **Demonstration Controls**, click **🌱 Load Mangaluru Demo Data (40 Reports)** if not already seeded.
 
 ---
 
@@ -17,13 +18,13 @@ This walkthrough guides evaluators and judges through the complete citizen-to-of
 
 ### Step 1: Submit a New High-Hazard Citizen Complaint (1 Minute)
 1. In the sidebar, select **Report an issue**.
-2. In the **Demo Quick Presets** panel on the right, click **Oakridge North School Gate** (automatically populates Area and Coordinates: `12.9725`, `77.5952`).
+2. In the **Mangaluru City Landmarks** panel on the right, click **Kadri North School Gate** (automatically populates Area `Kadri Hills` and Coordinates: `12.8945`, `74.8619`).
 3. Enter the following realistic complaint description:
    ```text
    A deep open crater in the road has exposed a broken culvert right in front of the school gate. Two children nearly fell in this morning. Immediate danger!
    ```
 4. Select Category: **Road damage**.
-5. Click **Submit Complaint**.
+5. Click **Submit Complaint to CityGuard**.
 6. **Key Highlights to Observe**:
    - The green confirmation card displays an official tracking token (e.g. `CIVIC-XXXX-XXXX`). **Copy or note this token.**
    - **Rule-based Category**: Correctly identified as `Road damage` with matched evidence keywords (`crater`, `road`).
@@ -31,7 +32,7 @@ This walkthrough guides evaluators and judges through the complete citizen-to-of
    - **Explainable Priority**: Assigned **High (80/100)**:
      - Immediate Physical Hazard (+60 pts)
      - Sensitive Community Setting - School (+20 pts)
-   - **Semantic Duplicate Warning**: Highlights nearby existing complaints in Oakridge Heights within 150m.
+   - **Semantic Duplicate Warning**: Highlights nearby existing complaints in Kadri Hills within 150m.
 
 ---
 

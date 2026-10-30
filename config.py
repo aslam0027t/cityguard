@@ -64,23 +64,23 @@ ALLOWED_TRANSITIONS = {
     "Resolved": ["In progress", "Reviewed"],
 }
 
-# Predefined Fictional Demo Areas with Anchor Coordinates
+# Real Mangaluru (Mangalore City, Karnataka) Municipal Areas with Anchor Coordinates
 DEMO_AREAS = {
-    "Oakridge Heights": {"lat": 12.9716, "lon": 77.5946},
-    "Maple Riverside": {"lat": 12.9820, "lon": 77.6050},
-    "Harbor Ward": {"lat": 12.9650, "lon": 77.6120},
-    "Pineview Central": {"lat": 12.9780, "lon": 77.5850},
-    "Elmwood Industrial": {"lat": 12.9550, "lon": 77.5750},
+    "Hampankatta": {"lat": 12.8703, "lon": 74.8427},
+    "Kadri Hills": {"lat": 12.8943, "lon": 74.8617},
+    "Lalbagh - Ladyhill": {"lat": 12.8872, "lon": 74.8398},
+    "Kankanady - Pumpwell": {"lat": 12.8668, "lon": 74.8624},
+    "Surathkal - Kulai": {"lat": 13.0108, "lon": 74.7943},
 }
 
-# Sample Presets for Interactive Demo Form Filling
+# Sample Presets for Interactive Demo Form Filling (Mangalore City Landmarks)
 SAMPLE_COORDINATES = [
-    {"label": "Oakridge Central Market", "area": "Oakridge Heights", "lat": 12.9718, "lon": 77.5948},
-    {"label": "Oakridge North School Gate", "area": "Oakridge Heights", "lat": 12.9725, "lon": 77.5952},
-    {"label": "Maple Riverside Bridge", "area": "Maple Riverside", "lat": 12.9822, "lon": 77.6054},
-    {"label": "Harbor Ward Primary Hospital", "area": "Harbor Ward", "lat": 12.9655, "lon": 77.6125},
-    {"label": "Pineview Junction", "area": "Pineview Central", "lat": 12.9784, "lon": 77.5855},
-    {"label": "Elmwood Cargo Terminal", "area": "Elmwood Industrial", "lat": 12.9555, "lon": 77.5755},
+    {"label": "Hampankatta Market Road", "area": "Hampankatta", "lat": 12.8705, "lon": 74.8429},
+    {"label": "Kadri North School Gate", "area": "Kadri Hills", "lat": 12.8945, "lon": 74.8619},
+    {"label": "Lalbagh MCC Head Office", "area": "Lalbagh - Ladyhill", "lat": 12.8874, "lon": 74.8400},
+    {"label": "Kankanady Father Muller Hospital Junction", "area": "Kankanady - Pumpwell", "lat": 12.8670, "lon": 74.8626},
+    {"label": "Surathkal Bus Terminal", "area": "Surathkal - Kulai", "lat": 13.0110, "lon": 74.7945},
+    {"label": "Bejai KSRTC Bus Stand", "area": "Lalbagh - Ladyhill", "lat": 12.8841, "lon": 74.8510},
 ]
 
 # Experimental Duplicate Detection Defaults

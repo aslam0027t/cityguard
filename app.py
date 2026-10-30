@@ -1,10 +1,11 @@
 """
-CivicAction: Explainable Civic Issue Triage & Intelligence
-Streamlit Web Application
-Provides three cohesive views:
-1. Report an issue (Citizen submission with immediate explainable feedback)
-2. Officer dashboard (Area-level briefs, triage, workflow updates, and duplicate linking)
-3. Track my report (Citizen token lookup with public audit trail)
+CityGuard 🛡️: Smart Civic Issue Intelligence & Operational Triage
+Mangaluru City Corporation (MCC) • Public Works & Civic Action System
+
+A state-of-the-art 2026 civic intelligence platform providing:
+1. Citizen Grievance Portal: Transparent submission with instant explainable feedback
+2. Officer Intelligence Dashboard: Area clustering, action briefs, queue triage, and duplicate resolution
+3. Citizen Progress Tracker: Token-based lookup with public audit timeline
 """
 
 import json
@@ -16,124 +17,327 @@ import config
 import database as db
 import ai_pipeline as ai
 import seed_data
+import supabase_client
 
-# Set Streamlit Page Configuration
+# -------------------------------------------------------------
+# 1. PAGE CONFIGURATION & 2026 DESIGN SYSTEM
+# -------------------------------------------------------------
 st.set_page_config(
-    page_title="CivicAction | Civic Issue Intelligence",
-    page_icon="🏛️",
+    page_title="CityGuard 🛡️ | Mangaluru Civic Intelligence",
+    page_icon="🛡️",
     layout="wide",
     initial_sidebar_state="expanded",
 )
 
-# Custom Styling for Clean Civic-Service Interface
+# Premium 2026 Design System: Glassmorphism, Micro-interactions & Vibrant Aesthetics
 st.markdown(
     """
     <style>
-    /* Civic Action Clean Theme */
-    .stApp {
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    /* Google Fonts: Plus Jakarta Sans & Outfit & JetBrains Mono */
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+    :root {
+        --primary-gradient: linear-gradient(135deg, #0ea5e9 0%, #2563eb 50%, #4f46e5 100%);
+        --accent-glow: rgba(37, 99, 235, 0.25);
+        --card-bg: rgba(255, 255, 255, 0.88);
+        --card-border: rgba(226, 232, 240, 0.8);
+        --text-heading: #0f172a;
+        --text-body: #334155;
+        --text-muted: #64748b;
+        --mcc-saffron: #f97316;
+        --mcc-green: #10b981;
     }
-    .civic-header {
-        background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%);
-        color: white;
-        padding: 1.2rem 1.5rem;
-        border-radius: 8px;
-        margin-bottom: 1.2rem;
+
+    /* Core typography and smooth font rendering */
+    html, body, [class*="css"] {
+        font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        color: var(--text-body);
+        -webkit-font-smoothing: antialiased;
     }
-    .civic-header h1 {
-        color: #f8fafc;
-        margin: 0;
-        font-size: 1.6rem;
-        font-weight: 700;
+
+    h1, h2, h3, h4, h5 {
+        font-family: 'Outfit', sans-serif !important;
         letter-spacing: -0.02em;
+        color: var(--text-heading);
     }
-    .civic-header p {
-        color: #94a3b8;
-        margin: 0.3rem 0 0 0;
-        font-size: 0.9rem;
+
+    /* Keyframe Animations */
+    @keyframes fadeInSlideUp {
+        0% { opacity: 0; transform: translateY(16px); }
+        100% { opacity: 1; transform: translateY(0); }
     }
-    .disclaimer-banner {
-        background-color: #fef3c7;
-        color: #92400e;
-        border-left: 4px solid #f59e0b;
-        padding: 0.6rem 1rem;
-        border-radius: 4px;
-        font-size: 0.85rem;
-        font-weight: 500;
-        margin-bottom: 1rem;
+
+    @keyframes pulseGlow {
+        0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.5); }
+        70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
     }
-    .metric-card {
-        background: #f8fafc;
-        border: 1px solid #e2e8f0;
-        border-radius: 6px;
-        padding: 0.8rem 1rem;
-        text-align: center;
+
+    @keyframes gradientShift {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
     }
-    .metric-value {
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: #0f172a;
+
+    /* Hero Header Card with Mangaluru Emblem Accent */
+    .cityguard-hero {
+        background: linear-gradient(-45deg, #091a36, #0e2954, #1b3d75, #08172e);
+        background-size: 300% 300%;
+        animation: gradientShift 15s ease infinite, fadeInSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        color: white;
+        padding: 1.8rem 2.2rem;
+        border-radius: 16px;
+        margin-bottom: 1.5rem;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        box-shadow: 0 20px 35px -10px rgba(10, 25, 47, 0.35);
+        position: relative;
+        overflow: hidden;
     }
-    .metric-label {
+
+    .cityguard-hero::before {
+        content: "";
+        position: absolute;
+        top: -50%;
+        right: -10%;
+        width: 320px;
+        height: 320px;
+        background: radial-gradient(circle, rgba(14, 165, 233, 0.22) 0%, rgba(0,0,0,0) 70%);
+        border-radius: 50%;
+        pointer-events: none;
+    }
+
+    .cityguard-hero h1 {
+        color: #ffffff !important;
+        font-size: 2.1rem;
+        font-weight: 800;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+    }
+
+    .cityguard-hero p {
+        color: #cbd5e1;
+        font-size: 0.95rem;
+        margin: 0.4rem 0 0 0;
+        max-width: 820px;
+    }
+
+    .cityguard-hero .mcc-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        background: rgba(255, 255, 255, 0.12);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(8px);
+        padding: 0.25rem 0.75rem;
+        border-radius: 30px;
         font-size: 0.75rem;
-        color: #64748b;
+        font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 0.05em;
+        margin-bottom: 0.7rem;
+        color: #38bdf8;
     }
+
+    /* Modern Glassmorphic Container Card */
+    .glass-card {
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        backdrop-filter: blur(16px) saturate(180%);
+        border-radius: 14px;
+        padding: 1.4rem;
+        margin-bottom: 1.2rem;
+        box-shadow: 0 8px 24px -4px rgba(15, 23, 42, 0.04), 0 2px 6px -1px rgba(15, 23, 42, 0.02);
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+        animation: fadeInSlideUp 0.5s ease;
+    }
+
+    .glass-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 16px 32px -6px rgba(37, 99, 235, 0.08);
+    }
+
+    /* Metric KPI Cards */
+    .kpi-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .kpi-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 1rem;
+        text-align: center;
+        transition: all 0.25s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .kpi-card:hover {
+        transform: translateY(-4px);
+        border-color: #3b82f6;
+        box-shadow: 0 12px 20px -6px rgba(59, 130, 246, 0.15);
+    }
+
+    .kpi-card::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 3px;
+        background: var(--primary-gradient);
+    }
+
+    .kpi-val {
+        font-family: 'Outfit', sans-serif;
+        font-size: 1.8rem;
+        font-weight: 800;
+        color: #0f172a;
+        line-height: 1.2;
+    }
+
+    .kpi-lbl {
+        font-size: 0.72rem;
+        font-weight: 700;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin-top: 0.3rem;
+    }
+
+    /* Badges & Status Chips */
+    .badge-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+    }
+
     .badge-high {
-        background-color: #fee2e2;
-        color: #991b1b;
-        padding: 2px 8px;
-        border-radius: 12px;
-        font-weight: 600;
-        font-size: 0.8rem;
+        background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+        color: #b91c1c;
+        border: 1px solid #f87171;
     }
+
+    .badge-high-pulse {
+        animation: pulseGlow 2s infinite;
+    }
+
     .badge-medium {
-        background-color: #fef3c7;
-        color: #92400e;
-        padding: 2px 8px;
-        border-radius: 12px;
-        font-weight: 600;
-        font-size: 0.8rem;
+        background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+        color: #b45309;
+        border: 1px solid #fbbf24;
     }
+
     .badge-low {
-        background-color: #dcfce7;
-        color: #166534;
-        padding: 2px 8px;
-        border-radius: 12px;
-        font-weight: 600;
-        font-size: 0.8rem;
+        background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+        color: #15803d;
+        border: 1px solid #86efac;
     }
-    .action-brief {
-        background-color: #eff6ff;
-        border: 1px solid #bfdbfe;
-        border-radius: 6px;
-        padding: 0.8rem 1rem;
+
+    /* Action Brief Panel */
+    .action-brief-box {
+        background: linear-gradient(135deg, #eff6ff 0%, #e0f2fe 100%);
+        border: 1px solid #93c5fd;
+        border-left: 5px solid #2563eb;
+        border-radius: 10px;
+        padding: 1.2rem;
         color: #1e3a8a;
-        margin-bottom: 1rem;
+        margin-bottom: 1.2rem;
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.05);
+    }
+
+    .action-brief-box h4 {
+        color: #1e40af !important;
+        margin: 0 0 0.5rem 0;
+        font-size: 1.15rem;
+        font-weight: 700;
+    }
+
+    /* Disclaimer & Safety Notice */
+    .civic-notice {
+        background: #fffbeb;
+        border-left: 4px solid #f59e0b;
+        color: #92400e;
+        padding: 0.8rem 1.1rem;
+        border-radius: 6px;
+        font-size: 0.86rem;
+        margin-bottom: 1.2rem;
+    }
+
+    /* WhatsApp Button Pill */
+    .wa-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: #25D366;
+        color: white !important;
+        padding: 0.5rem 1rem;
+        border-radius: 30px;
+        font-weight: 700;
+        font-size: 0.85rem;
+        text-decoration: none;
+        transition: transform 0.2s, background 0.2s;
+        box-shadow: 0 4px 12px rgba(37, 211, 102, 0.25);
+    }
+
+    .wa-btn:hover {
+        background: #1eb956;
+        transform: translateY(-2px);
+    }
+
+    /* Preset Chip Button Styling */
+    div[data-testid="stHorizontalBlock"] .stButton > button {
+        border-radius: 8px;
+        transition: all 0.2s ease;
+    }
+
+    div[data-testid="stHorizontalBlock"] .stButton > button:hover {
+        border-color: #2563eb;
+        color: #2563eb;
+        transform: translateY(-1px);
     }
     </style>
     """,
     unsafe_allow_html=True,
 )
 
-# Initialize Database Idempotently
+# -------------------------------------------------------------
+# 2. SYSTEM INITIALIZATION & CACHING
+# -------------------------------------------------------------
 db.init_db()
 
-
-# Cached Embedding Model (Using Streamlit Resource Caching)
 @st.cache_resource(show_spinner=False)
 def load_cached_model():
-    """Load and cache SentenceTransformer instance safely."""
+    """Load and cache local SentenceTransformer model instance safely."""
     return ai.get_embedding_model(config.DEFAULT_EMBEDDING_MODEL)
 
 
 # -------------------------------------------------------------
-# SIDEBAR NAVIGATION & SYSTEM SETTINGS
+# 3. SIDEBAR NAVIGATION & SYSTEM SETTINGS
 # -------------------------------------------------------------
 with st.sidebar:
-    st.markdown("### 🏛️ CivicAction")
-    st.caption("Explainable Civic Issue Triage")
+    st.markdown(
+        """
+        <div style="display:flex; align-items:center; gap:0.6rem; margin-bottom:0.2rem;">
+            <div style="font-size:2rem;">🛡️</div>
+            <div>
+                <div style="font-family:'Outfit', sans-serif; font-size:1.35rem; font-weight:800; color:#0f172a; line-height:1.1;">CityGuard</div>
+                <div style="font-size:0.75rem; color:#0284c7; font-weight:700; letter-spacing:0.02em;">MANGALURU CITY CORPORATION</div>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
     nav_selection = st.radio(
         "Navigation",
@@ -142,21 +346,37 @@ with st.sidebar:
     )
 
     st.markdown("---")
-    st.markdown("#### ⚙️ Demo Controls")
+    st.markdown("##### 📍 Mangaluru Civic Desk")
+    st.caption("Empowering MCC Ward Officers & Citizens across Karnataka with explainable, prioritized action.")
+
+    # WhatsApp Quick Helpline Link
+    st.markdown(
+        """
+        <div style="margin: 0.6rem 0 1rem 0;">
+            <a href="https://wa.me/918242220306?text=Hello%20CityGuard%20Mangaluru%20Helpdesk%2C%20I%20have%20a%20civic%20query" target="_blank" class="wa-btn">
+                <span>💬 WhatsApp Civic Helpdesk</span>
+            </a>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    st.markdown("---")
+    st.markdown("##### ⚙️ Demonstration Controls")
 
     # Seed Data Button
-    if st.button("🌱 Load Synthetic Demo Data (40 Reports)"):
-        with st.spinner("Seeding synthetic complaints..."):
+    if st.button("🌱 Load Mangaluru Demo Data (40 Reports)"):
+        with st.spinner("Seeding authentic Mangalore complaints..."):
             count = seed_data.seed_database(force_reseed=False)
             if count > 0:
-                st.success(f"Added {count} synthetic reports.")
+                st.success(f"Added {count} Mangaluru civic records.")
                 st.rerun()
             else:
-                st.info("Demo data already loaded (40 reports present).")
+                st.info("Demo data already loaded (40 Mangaluru records present).")
 
     # Safe Confirmed Reset
     with st.expander("⚠️ Database Reset"):
-        st.write("Reset database to empty state for testing clean submissions.")
+        st.write("Reset SQLite database to empty state for testing clean submissions.")
         confirm_reset = st.checkbox("Confirm database reset", key="chk_confirm_reset")
         if st.button("Execute Reset", type="primary"):
             if confirm_reset:
@@ -168,9 +388,8 @@ with st.sidebar:
 
     # Supabase Cloud Sync Controls
     with st.expander("☁️ Supabase Cloud Sync"):
-        import supabase_client
         if supabase_client.is_supabase_configured():
-            st.success("🟢 Supabase configured in .env")
+            st.success("🟢 Connected to Supabase")
             if st.button("Test Supabase Connection"):
                 ok, msg = supabase_client.test_supabase_connection()
                 if ok:
@@ -185,299 +404,336 @@ with st.sidebar:
                     else:
                         st.error(msg)
         else:
-            st.caption("Backend: Local SQLite (`data/civicaction.db`)")
+            st.caption("Active Backend: Local SQLite (`data/civicaction.db`)")
             st.info("💡 To connect Supabase:\n1. Open `.env`\n2. Set `SUPABASE_URL` & `SUPABASE_KEY`\n3. Execute `supabase_schema.sql` in your Supabase SQL Editor.")
 
     st.markdown("---")
-    st.caption("CivicAction v1.0 • Built for Solo Civic Hackathon")
+    st.caption("CityGuard v2.0 • Mangalore City Corporation Prototype")
 
 
-# -------------------------------------------------------------
+# =============================================================
 # SCREEN 1: REPORT AN ISSUE (CITIZEN VIEW)
-# -------------------------------------------------------------
+# =============================================================
 if nav_selection == "Report an issue":
     st.markdown(
         """
-        <div class="civic-header">
+        <div class="cityguard-hero">
+            <div class="mcc-tag">🏛️ Mangaluru City Corporation (MCC) • Public Action Portal</div>
             <h1>Report a Civic Issue</h1>
-            <p>Submit your complaint for immediate, explainable triage and municipal response.</p>
+            <p>Your grievance is instantly analyzed with transparent AI categorization, explainable priority scoring, and semantic duplicate detection across Mangaluru's municipal wards.</p>
         </div>
         """,
         unsafe_allow_html=True,
     )
 
-    col_form, col_presets = st.columns([2, 1], gap="medium")
+    form_col, preset_col = st.columns([1.5, 1], gap="large")
 
-    with col_presets:
-        st.markdown("#### 📍 Demo Quick Presets")
-        st.caption("Click a preset location to populate coordinates:")
-        for preset in config.SAMPLE_COORDINATES:
-            if st.button(preset["label"], key=f"btn_preset_{preset['label']}", use_container_width=True):
-                st.session_state["form_area"] = preset["area"]
-                st.session_state["form_lat"] = preset["lat"]
-                st.session_state["form_lon"] = preset["lon"]
+    # Initialize session state for pre-filling form from presets
+    if "form_desc" not in st.session_state:
+        st.session_state.form_desc = ""
+    if "form_cat" not in st.session_state:
+        st.session_state.form_cat = config.CATEGORIES[0]
+    if "form_area" not in st.session_state:
+        st.session_state.form_area = list(config.DEMO_AREAS.keys())[0]
+    if "form_lat" not in st.session_state:
+        st.session_state.form_lat = config.DEMO_AREAS[st.session_state.form_area]["lat"]
+    if "form_lon" not in st.session_state:
+        st.session_state.form_lon = config.DEMO_AREAS[st.session_state.form_area]["lon"]
+
+    with preset_col:
+        st.markdown(
+            """
+            <div class="glass-card">
+                <h4 style="margin:0 0 0.4rem 0;">📍 Mangaluru City Landmarks</h4>
+                <p style="font-size:0.85rem; color:#64748b; margin-bottom:0.8rem;">Click any landmark to auto-fill verified GPS coordinates:</p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+        for p in config.SAMPLE_COORDINATES:
+            if st.button(f"📌 {p['label']} ({p['area']})", key=f"btn_p_{p['label']}", use_container_width=True):
+                st.session_state.form_area = p["area"]
+                st.session_state.form_lat = p["lat"]
+                st.session_state.form_lon = p["lon"]
+                if "Market" in p["label"]:
+                    st.session_state.form_desc = "Massive open pothole in the asphalt near Hampankatta Central Market road. Vehicles are swerving into oncoming traffic."
+                    st.session_state.form_cat = "Road damage"
+                elif "School" in p["label"]:
+                    st.session_state.form_desc = "Asphalt collapsed forming a deep sinkhole right outside the school gate. Two school children nearly fell in this morning. Immediate danger!"
+                    st.session_state.form_cat = "Road damage"
+                elif "Hospital" in p["label"]:
+                    st.session_state.form_desc = "Uncollected medical waste and rotting organic garbage dumped outside hospital emergency gate. Serious health hazard."
+                    st.session_state.form_cat = "Waste"
+                elif "Terminal" in p["label"]:
+                    st.session_state.form_desc = "Main water pipeline burst near highway turn shooting drinking water 10 feet into the air. Clean water wasted."
+                    st.session_state.form_cat = "Water supply"
+                elif "Bus Stand" in p["label"]:
+                    st.session_state.form_desc = "Drainage culvert overflowing with black sewer water onto KSRTC bus stand passenger walkway."
+                    st.session_state.form_cat = "Drainage / waterlogging"
                 st.rerun()
 
-    with col_form:
-        # Form values with session state fallbacks
-        default_area = st.session_state.get("form_area", list(config.DEMO_AREAS.keys())[0])
-        default_lat = st.session_state.get("form_lat", config.DEMO_AREAS[default_area]["lat"])
-        default_lon = st.session_state.get("form_lon", config.DEMO_AREAS[default_area]["lon"])
-
-        with st.form("citizen_report_form", clear_on_submit=False):
-            st.markdown("##### Describe the Issue")
-            complaint_text = st.text_area(
-                "Complaint Description",
-                placeholder="Describe what happened, exact location details, and whether it poses an immediate hazard...",
-                height=130,
-                help=f"Minimum {config.MIN_DESCRIPTION_LENGTH} characters, maximum {config.MAX_DESCRIPTION_LENGTH} characters.",
+    with form_col:
+        with st.form("citizen_complaint_form"):
+            selected_cat = st.selectbox(
+                "Category (What type of issue is this?)",
+                config.CATEGORIES,
+                index=config.CATEGORIES.index(st.session_state.form_cat) if st.session_state.form_cat in config.CATEGORIES else 0,
             )
 
-            col_cat, col_area = st.columns(2)
-            with col_cat:
-                citizen_category = st.selectbox("Category", config.CATEGORIES)
-            with col_area:
+            complaint_text = st.text_area(
+                "Describe the issue in detail",
+                value=st.session_state.form_desc,
+                height=130,
+                placeholder="e.g. Deep crater in the road right in front of the school gate. Two children nearly fell in this morning. Immediate hazard!",
+                help="Provide exact landmarks, safety hazards, and disruption details.",
+            )
+
+            c_area, c_lat, c_lon = st.columns(3)
+            with c_area:
                 selected_area = st.selectbox(
-                    "Demo Area",
+                    "Mangaluru Ward / Area",
                     list(config.DEMO_AREAS.keys()),
-                    index=list(config.DEMO_AREAS.keys()).index(default_area) if default_area in config.DEMO_AREAS else 0,
+                    index=list(config.DEMO_AREAS.keys()).index(st.session_state.form_area) if st.session_state.form_area in config.DEMO_AREAS else 0,
                 )
+            with c_lat:
+                input_lat = st.number_input("Latitude", value=float(st.session_state.form_lat), format="%.4f")
+            with c_lon:
+                input_lon = st.number_input("Longitude", value=float(st.session_state.form_lon), format="%.4f")
 
-            st.markdown("##### Location Coordinates (Fictional Demo)")
-            col_lat, col_lon = st.columns(2)
-            with col_lat:
-                lat_input = st.number_input(
-                    "Latitude",
-                    min_value=-90.0,
-                    max_value=90.0,
-                    value=float(default_lat),
-                    format="%.5f",
-                )
-            with col_lon:
-                lon_input = st.number_input(
-                    "Longitude",
-                    min_value=-180.0,
-                    max_value=180.0,
-                    value=float(default_lon),
-                    format="%.5f",
-                )
+            submit_btn = st.form_submit_button("🚀 Submit Complaint to CityGuard", type="primary", use_container_width=True)
 
-            st.caption("ℹ️ Labeled fictional coordinates are used for demonstration. No real citizen location is collected.")
-
-            submit_button = st.form_submit_button("Submit Complaint", type="primary", use_container_width=True)
-
-        if submit_button:
+        if submit_btn:
             # Inline Validation
             clean_text = complaint_text.strip()
             if len(clean_text) < config.MIN_DESCRIPTION_LENGTH:
-                st.error(f"Please provide a meaningful complaint description (minimum {config.MIN_DESCRIPTION_LENGTH} characters).")
+                st.error(f"Description is too short. Please provide at least {config.MIN_DESCRIPTION_LENGTH} characters of detail.")
             elif len(clean_text) > config.MAX_DESCRIPTION_LENGTH:
-                st.error(f"Complaint description is too long (maximum {config.MAX_DESCRIPTION_LENGTH} characters).")
+                st.error(f"Description exceeds maximum allowed limit of {config.MAX_DESCRIPTION_LENGTH} characters.")
             else:
-                # Prevent accidental double submit on rerun
-                submission_key = f"{clean_text}_{lat_input}_{lon_input}"
-                if st.session_state.get("last_submission_key") == submission_key:
-                    st.info("This report was already submitted.")
-                else:
-                    with st.spinner("Recording and analyzing report..."):
-                        # 1. Fetch existing reports for duplicate context
-                        existing = db.get_all_reports()
-                        model = load_cached_model()
+                with st.spinner("Analyzing complaint and checking duplicate records in Mangaluru..."):
+                    existing_reps = db.get_all_reports()
+                    model = load_cached_model()
 
-                        # 2. Run Analysis Pipeline
-                        analysis = ai.analyze_complaint(
-                            description=clean_text,
-                            citizen_category=citizen_category,
-                            latitude=lat_input,
-                            longitude=lon_input,
-                            area=selected_area,
-                            existing_reports=existing,
-                            model=model,
+                    # Run AI Pipeline
+                    analysis = ai.analyze_complaint(
+                        description=clean_text,
+                        citizen_category=selected_cat,
+                        latitude=input_lat,
+                        longitude=input_lon,
+                        area=selected_area,
+                        existing_reports=existing_reps,
+                        model=model,
+                    )
+
+                    # Generate Tracking Token & Persist
+                    token = db.generate_tracking_token()
+                    report_payload = {
+                        "tracking_token": token,
+                        "description": clean_text,
+                        "citizen_category": selected_cat,
+                        "predicted_category": analysis["predicted_category"],
+                        "category_evidence": analysis["category_evidence"],
+                        "extractive_summary": analysis["extractive_summary"],
+                        "latitude": input_lat,
+                        "longitude": input_lon,
+                        "area": selected_area,
+                        "priority_score": analysis["priority_score"],
+                        "priority_label": analysis["priority_label"],
+                        "priority_reasons": analysis["priority_reasons"],
+                        "needs_review": analysis["needs_review"],
+                        "analysis_status": analysis["analysis_status"],
+                        "analysis_error": analysis["analysis_error"],
+                        "workflow_status": "Submitted",
+                        "assigned_department": None,
+                    }
+
+                    new_report_id = db.insert_report(report_payload)
+
+                    # Record duplicate candidate relationships if surfaced
+                    for dup in analysis.get("duplicate_candidates", []):
+                        db.record_duplicate_candidate(
+                            source_id=new_report_id,
+                            candidate_id=dup["candidate_id"],
+                            similarity=dup["similarity_score"],
+                            distance_meters=dup["distance_meters"],
+                            review_state="suggested",
                         )
 
-                        # 3. Persist Report in Database
-                        tracking_token = db.generate_tracking_token()
-                        report_payload = {
-                            "tracking_token": tracking_token,
-                            "description": clean_text,
-                            "citizen_category": citizen_category,
-                            "predicted_category": analysis["predicted_category"],
-                            "category_evidence": analysis["category_evidence"],
-                            "extractive_summary": analysis["extractive_summary"],
-                            "latitude": lat_input,
-                            "longitude": lon_input,
-                            "area": selected_area,
-                            "priority_score": analysis["priority_score"],
-                            "priority_label": analysis["priority_label"],
-                            "priority_reasons": analysis["priority_reasons"],
-                            "needs_review": analysis["needs_review"],
-                            "analysis_status": analysis["analysis_status"],
-                            "analysis_error": analysis["analysis_error"],
-                            "workflow_status": "Submitted",
-                            "assigned_department": None,
-                        }
+                # Instant Feedback Receipt Card
+                st.markdown(
+                    f"""
+                    <div style="background:#ecfdf5; border:1px solid #6ee7b7; border-radius:12px; padding:1.5rem; margin-top:1.5rem; animation:fadeInSlideUp 0.5s ease;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #d1fae5; padding-bottom:0.8rem; margin-bottom:1rem;">
+                            <div>
+                                <div style="font-size:0.75rem; color:#047857; font-weight:700; text-transform:uppercase;">Official Tracking Token</div>
+                                <div style="font-family:'JetBrains Mono', monospace; font-size:1.6rem; font-weight:800; color:#065f46;">{token}</div>
+                            </div>
+                            <div style="background:#059669; color:white; padding:0.35rem 1rem; border-radius:20px; font-weight:700; font-size:0.85rem;">
+                                Submitted & Logged
+                            </div>
+                        </div>
+                        <p style="margin:0 0 0.8rem 0; font-size:0.95rem; color:#064e3b;">
+                            <strong>✅ Your complaint has been submitted to Mangalore City Corporation.</strong> Keep this token to track progress in the Citizen Tracker.
+                        </p>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
 
-                        report_id = db.insert_report(report_payload)
+                # Explainability Breakdown
+                with st.expander("🔍 View Transparent AI Analysis Receipt", expanded=True):
+                    r_c1, r_c2, r_c3 = st.columns(3)
+                    with r_c1:
+                        st.markdown("**Rule-Based Category**")
+                        st.write(f"`{analysis['predicted_category']}`")
+                        ev_list = json.loads(analysis["category_evidence"])
+                        if ev_list:
+                            st.caption(f"Matched keyword tokens: {', '.join(ev_list)}")
+                        else:
+                            st.caption("No dominant keywords found; flagged for officer review.")
 
-                        # Record duplicate candidate links if any found
-                        for dup in analysis.get("duplicate_candidates", []):
-                            db.record_duplicate_candidate(
-                                source_id=report_id,
-                                candidate_id=dup["candidate_id"],
-                                similarity=dup["similarity_score"],
-                                distance_meters=dup["distance_meters"],
-                                review_state="suggested",
+                    with r_c2:
+                        st.markdown("**Salient Summary**")
+                        st.write(f'"{analysis["extractive_summary"]}"')
+
+                    with r_c3:
+                        st.markdown("**Explainable Priority**")
+                        p_label = analysis["priority_label"]
+                        p_score = analysis["priority_score"]
+                        badge_style = "badge-high badge-high-pulse" if p_label == "High" else ("badge-medium" if p_label == "Medium" else "badge-low")
+                        st.markdown(f"<span class='badge-pill {badge_style}'>{p_label} ({p_score}/100)</span>", unsafe_allow_html=True)
+
+                    # Factor breakdown
+                    reasons = json.loads(analysis["priority_reasons"])
+                    if reasons:
+                        st.markdown("**Priority Point Justifications:**")
+                        for r in reasons:
+                            st.write(f"- **{r.get('factor')}** (+{r.get('points')} pts): {r.get('explanation')}")
+
+                    # Duplicate Alert (if any nearby candidates detected)
+                    duplicates = analysis.get("duplicate_candidates", [])
+                    if duplicates:
+                        st.markdown("---")
+                        st.markdown(f"**🔗 Potential Semantic Duplicate Warning ({len(duplicates)} nearby reports found):**")
+                        for d in duplicates:
+                            st.info(
+                                f"• Report #{d['candidate_id']} ({d['candidate_token']}) located **{d['distance_meters']}m** away — "
+                                f"Semantic similarity: **{d['similarity_score']:.2f}**\n\n"
+                                f"*{d['candidate_summary']}*"
                             )
+                        st.caption("Note: Your complaint remains an independent submission. Ward officers will review duplicate links during dispatch.")
 
-                        st.session_state["last_submission_key"] = submission_key
-                        st.session_state["latest_submitted_token"] = tracking_token
-                        st.session_state["latest_analysis"] = analysis
-                        st.session_state["latest_report"] = report_payload
+    # Citizen FAQ Section
+    st.markdown("---")
+    st.markdown("### ❓ Frequently Asked Questions")
+    with st.expander("How does CityGuard assign priority to my complaint?"):
+        st.write(
+            "CityGuard uses a transparent, explainable additive scoring policy:\n"
+            "- **+60 points** for immediate physical hazards (e.g. deep sinkholes, exposed live wires, structural collapses).\n"
+            "- **+20 points** for sensitive community settings (e.g. schools, hospitals, childcare centers).\n"
+            "- **+20 points** for critical access disruption (e.g. flooded road, impassable street, total water cut).\n"
+            "Reports scoring 60–100 are ranked **High**, 30–59 are **Medium**, and 0–29 are **Low**."
+        )
+    with st.expander("Does CityGuard delete or merge duplicate complaints?"):
+        st.write(
+            "No! Unlike conventional systems, CityGuard retains the independent identity and tracking token of every citizen's submission. "
+            "When duplicate issues are detected, they are linked as related items so field crews can coordinate a single dispatch without erasing citizen records."
+        )
+    with st.expander("Is my personal data visible on the public tracker?"):
+        st.write(
+            "No. CityGuard guarantees strict citizen privacy. Only public municipal service notes, department assignments, and workflow statuses are visible on the public tracker. "
+            "Internal officer notes, budget codes, and citizen contact information are strictly excluded."
+        )
 
-    # Display Immediate Explainable Feedback Card
-    if "latest_submitted_token" in st.session_state:
-        token = st.session_state["latest_submitted_token"]
-        analysis = st.session_state.get("latest_analysis", {})
-        rep = st.session_state.get("latest_report", {})
 
-        st.markdown("---")
-        st.success("✅ **Report Successfully Registered!**")
+# =============================================================
+# SCREEN 2: OFFICER DASHBOARD (TRIAGE & OPERATIONS)
+# =============================================================
+elif nav_selection == "Officer dashboard":
+    st.markdown(
+        """
+        <div class="cityguard-hero">
+            <div class="mcc-tag">🛠️ Mangaluru City Corporation (MCC) • Municipal Operations Console</div>
+            <h1>CityGuard Officer Dashboard</h1>
+            <p>Actionable municipal intelligence for Mangaluru ward engineers, field superintendents, and department coordinators.</p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    all_reports = db.get_all_reports()
+
+    if not all_reports:
+        st.info("No complaints found in the database. Use '🌱 Load Mangaluru Demo Data (40 Reports)' in the sidebar to populate realistic complaints.")
+    else:
+        df = pd.DataFrame(all_reports)
+
+        # Compute effective priority (respecting officer overrides)
+        df["effective_priority"] = df.apply(
+            lambda r: r["priority_override_score"] if pd.notnull(r["priority_override_score"]) else r["priority_score"],
+            axis=1,
+        )
+        df["effective_label"] = df.apply(
+            lambda r: r["priority_override_label"] if pd.notnull(r["priority_override_label"]) and r["priority_override_label"] else r["priority_label"],
+            axis=1,
+        )
+
+        # -----------------------------------------------------
+        # 1. KPI METRIC CARDS
+        # -----------------------------------------------------
+        total_reports = len(df)
+        open_reports = len(df[df["workflow_status"] != "Resolved"])
+        high_priority_open = len(df[(df["effective_priority"] >= 60) & (df["workflow_status"] != "Resolved")])
+        unassigned_reports = len(df[(df["assigned_department"].isna()) | (df["assigned_department"] == "")])
+        resolved_reports = len(df[df["workflow_status"] == "Resolved"])
+        needs_review_count = len(df[df["needs_review"] == 1])
 
         st.markdown(
             f"""
-            <div style="background:#f0fdf4; border:1px solid #86efac; border-radius:8px; padding:1.2rem; margin-bottom:1rem;">
-                <div style="font-size:0.85rem; color:#15803d; font-weight:600;">OFFICIAL TRACKING TOKEN</div>
-                <div style="font-size:1.8rem; font-weight:800; color:#166534; font-family:monospace; letter-spacing:0.05em;">{token}</div>
-                <div style="font-size:0.85rem; color:#475569; margin-top:0.3rem;">
-                    Save this token to monitor response progress under <strong>Track my report</strong>.
+            <div class="kpi-container">
+                <div class="kpi-card">
+                    <div class="kpi-val">{total_reports}</div>
+                    <div class="kpi-lbl">Total Reports</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-val" style="color:#2563eb;">{open_reports}</div>
+                    <div class="kpi-lbl">Active Open</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-val" style="color:#dc2626;">{high_priority_open}</div>
+                    <div class="kpi-lbl">High-Priority Open</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-val" style="color:#d97706;">{unassigned_reports}</div>
+                    <div class="kpi-lbl">Unassigned</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-val" style="color:#16a34a;">{resolved_reports}</div>
+                    <div class="kpi-lbl">Resolved</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-val" style="color:#7c3aed;">{needs_review_count}</div>
+                    <div class="kpi-lbl">Needs Review</div>
                 </div>
             </div>
             """,
             unsafe_allow_html=True,
         )
 
-        res_col1, res_col2 = st.columns(2)
-
-        with res_col1:
-            st.markdown("##### 🔍 Categorization & Summary")
-            st.write(f"**Extractive Summary:** {rep.get('extractive_summary', '')}")
-            st.write(f"**Citizen Category:** `{rep.get('citizen_category')}`")
-            pred_cat = rep.get("predicted_category")
-            st.write(f"**Rule-based Category:** `{pred_cat}`")
-
-            evidence = analysis.get("category_evidence", [])
-            if evidence:
-                st.caption(f"Matched keyword evidence: {', '.join(evidence)}")
-            else:
-                st.caption("No strong keyword matches; flagged for officer review.")
-
-        with res_col2:
-            st.markdown("##### ⚡ Explainable Priority")
-            p_score = rep.get("priority_score", 0)
-            p_label = rep.get("priority_label", "Low")
-            badge_class = f"badge-{p_label.lower()}"
-
-            st.markdown(
-                f"**Assigned Priority:** <span class='{badge_class}'>{p_label} ({p_score}/100)</span>",
-                unsafe_allow_html=True,
-            )
-
-            factors = analysis.get("priority_reasons", [])
-            if factors:
-                st.markdown("**Applied Policy Factors:**")
-                for f in factors:
-                    st.write(f"- **{f.get('factor')}** (+{f.get('points', 0)} pts): {f.get('explanation')}")
-            else:
-                st.write("- Standard baseline priority (no high hazard indicators detected).")
-
-            st.caption("Prototype demonstration rules; not official municipal standards.")
-
-        # Show Duplicate Warnings if suggested
-        duplicates = analysis.get("duplicate_candidates", [])
-        if duplicates:
-            st.markdown("##### 🔗 Possible Related Reports Nearby")
-            st.info(
-                f"We noticed {len(duplicates)} similar report(s) nearby within 150m. "
-                "Your complaint has been saved as an independent record and will be reviewed together by municipal staff."
-            )
-            for d in duplicates[:3]:
-                st.write(
-                    f"- **#{d['candidate_id']}** (`{d['candidate_token']}`): *{d['summary']}* "
-                    f"— Distance: {d['distance_meters']}m | Similarity: {d['similarity_score']:.2f}"
-                )
-
-
-# -------------------------------------------------------------
-# SCREEN 2: OFFICER DASHBOARD
-# -------------------------------------------------------------
-elif nav_selection == "Officer dashboard":
-    st.markdown(
-        """
-        <div class="civic-header">
-            <h1>Municipal Officer Triage Dashboard</h1>
-            <p>Monitor real-time incoming complaints, review area clusters, assign departments, and track resolutions.</p>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-    st.markdown(
-        """
-        <div class="disclaimer-banner">
-            ⚠️ <strong>Demo officer view — authentication is not implemented.</strong>
-            This view simulates the internal triage console for public service administrators.
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-    # Fetch All Stored Reports
-    all_reports = db.get_all_reports()
-
-    if not all_reports:
-        st.info("No reports currently in the database. Use **Load Synthetic Demo Data** in the sidebar or submit a new report.")
-    else:
-        df = pd.DataFrame(all_reports)
-
-        # -----------------------------------------------------
-        # 1. SUMMARY METRICS (KPIs)
-        # -----------------------------------------------------
-        total_reports = len(df)
-        open_reports = len(df[df["workflow_status"] != "Resolved"])
-        high_priority_open = len(df[(df["workflow_status"] != "Resolved") & (df["effective_priority"] >= 60)])
-        unassigned_reports = len(df[(df["workflow_status"] != "Resolved") & (df["assigned_department"].isna() | (df["assigned_department"] == ""))])
-        resolved_reports = len(df[df["workflow_status"] == "Resolved"])
-        needs_review_count = len(df[df["needs_review"] == 1])
-
-        kpi_col1, kpi_col2, kpi_col3, kpi_col4, kpi_col5, kpi_col6 = st.columns(6)
-        with kpi_col1:
-            st.markdown(f"<div class='metric-card'><div class='metric-value'>{total_reports}</div><div class='metric-label'>Total Reports</div></div>", unsafe_allow_html=True)
-        with kpi_col2:
-            st.markdown(f"<div class='metric-card'><div class='metric-value'>{open_reports}</div><div class='metric-label'>Open Reports</div></div>", unsafe_allow_html=True)
-        with kpi_col3:
-            st.markdown(f"<div class='metric-card'><div class='metric-value' style='color:#dc2626;'>{high_priority_open}</div><div class='metric-label'>High-Priority Open</div></div>", unsafe_allow_html=True)
-        with kpi_col4:
-            st.markdown(f"<div class='metric-card'><div class='metric-value'>{unassigned_reports}</div><div class='metric-label'>Unassigned</div></div>", unsafe_allow_html=True)
-        with kpi_col5:
-            st.markdown(f"<div class='metric-card'><div class='metric-value' style='color:#16a34a;'>{resolved_reports}</div><div class='metric-label'>Resolved</div></div>", unsafe_allow_html=True)
-        with kpi_col6:
-            st.markdown(f"<div class='metric-card'><div class='metric-value' style='color:#d97706;'>{needs_review_count}</div><div class='metric-label'>Needs Review</div></div>", unsafe_allow_html=True)
-
-        st.markdown("<br>", unsafe_allow_html=True)
-
         # -----------------------------------------------------
         # 2. AREA-LEVEL GROUPING & ACTION BRIEF
         # -----------------------------------------------------
-        st.markdown("### 📊 Area-level grouping and action brief")
+        st.markdown("### 📊 Area-Level Grouping & Action Brief")
 
         area_selected = st.selectbox(
-            "Select Demo Area to Inspect",
-            ["All Areas"] + list(config.DEMO_AREAS.keys()),
+            "Select Mangaluru Ward to Inspect",
+            ["All Wards"] + list(config.DEMO_AREAS.keys()),
             index=0,
         )
 
         active_df = df[df["workflow_status"] != "Resolved"]
-        if area_selected != "All Areas":
+        if area_selected != "All Wards":
             area_active_df = active_df[active_df["area"] == area_selected]
         else:
             area_active_df = active_df
@@ -489,111 +745,89 @@ elif nav_selection == "Officer dashboard":
         top_cat_count = area_cats.iloc[0] if not area_cats.empty else 0
         area_high_p = len(area_active_df[area_active_df["effective_priority"] >= 60])
 
-        # Confirmed unique issue count calculation
-        # Count each confirmed duplicate group once for reviewed-issue metric
-        confirmed_pairs = db.get_db_connection()
         with db.get_db_connection() as conn:
             cursor = conn.cursor()
             cursor.execute("SELECT source_report_id, candidate_report_id FROM duplicate_relationships WHERE review_state = 'confirmed';")
             pairs = cursor.fetchall()
-            # Simple connected components count
             adj = {}
             for p in pairs:
                 s, c = p[0], p[1]
                 adj.setdefault(s, set()).add(c)
                 adj.setdefault(c, set()).add(s)
 
-        # Count reviewed unique issue groups
-        active_ids = set(area_active_df["id"].tolist())
-        visited = set()
-        unique_groups = 0
-        for aid in active_ids:
-            if aid not in visited:
-                unique_groups += 1
-                # Mark cluster
-                q = [aid]
-                visited.add(aid)
-                while q:
-                    curr = q.pop(0)
-                    for neighbor in adj.get(curr, []):
-                        if neighbor in active_ids and neighbor not in visited:
-                            visited.add(neighbor)
-                            q.append(neighbor)
+            visited = set()
+            clusters = 0
+            for r_id in area_active_df["id"]:
+                if r_id not in visited:
+                    clusters += 1
+                    queue = [r_id]
+                    visited.add(r_id)
+                    while queue:
+                        curr = queue.pop(0)
+                        for neighbor in adj.get(curr, []):
+                            if neighbor in area_active_df["id"].values and neighbor not in visited:
+                                visited.add(neighbor)
+                                queue.append(neighbor)
 
-        # Render Template-based Action Brief
-        target_name = area_selected if area_selected != "All Areas" else "Across all areas"
-        brief_text = (
-            f"**Operational Brief:** {target_name} currently has **{area_sub_count} active submissions** "
-            f"(representing **{unique_groups} unique issue clusters**). "
+        confirmed_unique_issues = clusters
+
+        # Generate Action Brief
+        dept_recs = {
+            "Road damage": "Roads & Civil Works Division",
+            "Waste": "Sanitation & Solid Waste Management",
+            "Drainage / waterlogging": "Drainage & Stormwater Maintenance",
+            "Streetlights / electrical": "MESCOM / City Electrical Maintenance",
+            "Water supply": "Municipal Water Services & Pipe Network",
+            "Other": "General Municipal Grievance Cell",
+        }
+        recommended_dept = dept_recs.get(top_cat, "General Municipal Cell")
+
+        st.markdown(
+            f"""
+            <div class="action-brief-box">
+                <h4>📋 Operational Brief: {area_selected}</h4>
+                <div style="font-size:0.95rem; line-height:1.6;">
+                    • <strong>Current Workload:</strong> {area_sub_count} raw submissions representing <strong>{confirmed_unique_issues} unique physical problem clusters</strong>.<br>
+                    • <strong>Primary Complaint Pattern:</strong> <code>{top_cat}</code> ({top_cat_count} active reports).<br>
+                    • <strong>High-Risk Safety Alerts:</strong> <span style="color:#b91c1c; font-weight:700;">{area_high_p} severe issues</span> require immediate site inspection.<br>
+                    • <strong>Recommended Response:</strong> Deploy <strong>{recommended_dept}</strong> for combined route inspection.
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
         )
-        if top_cat != "None" and top_cat_count > 1:
-            brief_text += f"There is a notable concentration of **{top_cat_count} {top_cat.lower()}** reports. "
-            brief_text += f"Recommend dispatching a coordinated **{top_cat}** field inspection team to resolve these concurrently."
-        else:
-            brief_text += "Submissions are evenly distributed across categories without a single dominant cluster."
 
-        st.markdown(f"<div class='action-brief'>{brief_text}</div>", unsafe_allow_html=True)
+        # -----------------------------------------------------
+        # 3. INTERACTIVE QUEUE & MAP
+        # -----------------------------------------------------
+        m_col1, m_col2 = st.columns([1, 1], gap="medium")
 
-        with st.expander(f"Supporting Reports for {target_name} ({area_sub_count} active)"):
-            if not area_active_df.empty:
-                st.dataframe(
-                    area_active_df[[
-                        "id", "tracking_token", "area", "predicted_category",
-                        "effective_priority", "priority_label", "workflow_status", "assigned_department"
-                    ]],
-                    use_container_width=True,
-                )
+        with m_col1:
+            st.markdown("##### 🗺️ Geographic Distribution (Mangaluru)")
+            map_data = area_active_df[["latitude", "longitude"]].copy()
+            if not map_data.empty:
+                st.map(map_data, zoom=12, use_container_width=True)
             else:
-                st.write("No active complaints in this area.")
+                st.info("No active complaints to display on map.")
 
-        st.markdown("---")
+        with m_col2:
+            st.markdown("##### ⚡ Quick Queue Filter")
+            filter_cat = st.multiselect("Filter Category", config.CATEGORIES, default=[])
+            filter_prio = st.multiselect("Filter Priority", ["High", "Medium", "Low"], default=[])
 
-        # -----------------------------------------------------
-        # 3. FILTERS & MAP VIEW
-        # -----------------------------------------------------
-        st.markdown("### 🗺️ Incident Map & Triage Table")
+            filtered_df = area_active_df
+            if filter_cat:
+                filtered_df = filtered_df[filtered_df["predicted_category"].isin(filter_cat)]
+            if filter_prio:
+                filtered_df = filtered_df[filtered_df["effective_label"].isin(filter_prio)]
 
-        filt_col1, filt_col2, filt_col3, filt_col4 = st.columns(4)
-        with filt_col1:
-            filter_status = st.selectbox("Status Filter", ["All"] + config.WORKFLOW_STATUSES)
-        with filt_col2:
-            filter_prio = st.selectbox("Priority Filter", ["All", "High", "Medium", "Low"])
-        with filt_col3:
-            filter_cat = st.selectbox("Category Filter", ["All"] + config.CATEGORIES)
-        with filt_col4:
-            search_query = st.text_input("Search (Token / Text)", "")
-
-        filtered_df = df.copy()
-        if filter_status != "All":
-            filtered_df = filtered_df[filtered_df["workflow_status"] == filter_status]
-        if filter_prio != "All":
-            filtered_df = filtered_df[filtered_df["priority_label"] == filter_prio]
-        if filter_cat != "All":
-            filtered_df = filtered_df[filtered_df["predicted_category"] == filter_cat]
-        if area_selected != "All Areas":
-            filtered_df = filtered_df[filtered_df["area"] == area_selected]
-        if search_query.strip():
-            sq = search_query.strip().lower()
-            filtered_df = filtered_df[
-                filtered_df["tracking_token"].str.lower().str.contains(sq)
-                | filtered_df["description"].str.lower().str.contains(sq)
-                | filtered_df["extractive_summary"].str.lower().str.contains(sq)
-            ]
-
-        # Location Map with graceful fallback disclosure
-        st.caption("Incident Geographic Distribution:")
-        if not filtered_df.empty:
-            map_data = filtered_df[["latitude", "longitude"]].rename(columns={"latitude": "lat", "longitude": "lon"})
-            st.map(map_data, zoom=12)
-            st.caption("ℹ️ Map tiles depend on an external basemap provider. If offline, table data and triage below remain fully operational.")
-        else:
-            st.info("No reports match current filters.")
+            st.caption(f"Showing **{len(filtered_df)}** prioritized reports in queue.")
 
         # Data Table Sorted by Effective Priority Descending, then Created At Ascending
         st.markdown("##### Filtered Reports Queue")
         display_columns = [
             "id", "tracking_token", "area", "predicted_category",
-            "effective_priority", "priority_label", "workflow_status",
+            "effective_priority", "effective_label", "workflow_status",
             "assigned_department", "needs_review", "created_at"
         ]
         st.dataframe(filtered_df[display_columns], use_container_width=True, height=260)
@@ -620,14 +854,14 @@ elif nav_selection == "Officer dashboard":
                     st.markdown("##### 📄 Complaint Information")
                     st.write(f"**Tracking Token:** `{rep['tracking_token']}`")
                     st.write(f"**Submitted At (UTC):** {rep['created_at']}")
-                    st.write(f"**Area:** {rep['area']} ({rep['latitude']:.4f}, {rep['longitude']:.4f})")
+                    st.write(f"**Ward / Area:** {rep['area']} ({rep['latitude']:.4f}, {rep['longitude']:.4f})")
                     st.write(f"**Citizen Category:** `{rep['citizen_category']}`")
                     st.write(f"**Predicted Category:** `{rep['predicted_category']}` (Rule-based)")
-                    
+
                     try:
                         ev_list = json.loads(rep["category_evidence"])
                         if ev_list:
-                            st.caption(f"Category Evidence: {', '.join(ev_list)}")
+                            st.caption(f"Category Evidence Tokens: {', '.join(ev_list)}")
                     except Exception:
                         pass
 
@@ -638,9 +872,9 @@ elif nav_selection == "Officer dashboard":
                     st.markdown("##### ⚖️ Priority Breakdown")
                     eff_score = rep["priority_override_score"] if rep["priority_override_score"] is not None else rep["priority_score"]
                     eff_label = rep["priority_override_label"] or rep["priority_label"]
-                    badge_class = f"badge-{eff_label.lower()}"
+                    badge_style = "badge-high badge-high-pulse" if eff_label == "High" else ("badge-medium" if eff_label == "Medium" else "badge-low")
                     st.markdown(
-                        f"Current Priority: <span class='{badge_class}'>{eff_label} ({eff_score}/100)</span>",
+                        f"Current Priority: <span class='badge-pill {badge_style}'>{eff_label} ({eff_score}/100)</span>",
                         unsafe_allow_html=True,
                     )
 
@@ -659,7 +893,7 @@ elif nav_selection == "Officer dashboard":
                         with st.form(f"form_override_prio_{rep['id']}"):
                             override_label = st.selectbox("New Priority Label", ["High", "Medium", "Low"])
                             override_score = st.slider("New Score", 0, 100, 75 if override_label=="High" else (45 if override_label=="Medium" else 20))
-                            override_reason = st.text_input("Mandatory Reason for Override", placeholder="e.g. Verified high hazard during site inspection")
+                            override_reason = st.text_input("Mandatory Reason for Override", placeholder="e.g. Verified high hazard during MCC site inspection")
                             btn_override = st.form_submit_button("Apply Override")
 
                         if btn_override:
@@ -728,7 +962,8 @@ elif nav_selection == "Officer dashboard":
                                         db.update_duplicate_review_state(d["relationship_id"], "confirmed")
                                         st.success("Duplicate confirmed and linked.")
                                         st.rerun()
-                                with btn_c2:
+                                Danger_btn = btn_c2
+                                with Danger_btn:
                                     if st.button("Reject Suggestion", key=f"btn_reject_dup_{d['relationship_id']}"):
                                         db.update_duplicate_review_state(d["relationship_id"], "rejected")
                                         st.info("Suggestion rejected.")
@@ -740,105 +975,109 @@ elif nav_selection == "Officer dashboard":
                     with st.expander("📜 View Complete Event Audit Trail"):
                         events = db.get_report_events(rep["id"], public_only=False)
                         for ev in events:
-                            pub_badge = "🌐 Public" if ev["is_public"] else "🔒 Internal"
-                            st.write(f"**[{ev['created_at'][:19]}]** `{ev['event_type']}` ({pub_badge}): {ev['note']}")
+                            v_badge = "🌐 Public" if ev["is_public"] else "🔒 Internal"
+                            st.write(f"• **{ev['created_at'][:16]} UTC** — [{v_badge}] `{ev['event_type']}`: {ev['note']}")
 
 
-# -------------------------------------------------------------
+# =============================================================
 # SCREEN 3: TRACK MY REPORT (CITIZEN VIEW)
-# -------------------------------------------------------------
+# =============================================================
 elif nav_selection == "Track my report":
     st.markdown(
         """
-        <div class="civic-header">
+        <div class="cityguard-hero">
+            <div class="mcc-tag">🔍 Mangaluru City Corporation (MCC) • Citizen Progress Tracking</div>
             <h1>Track Your Report</h1>
-            <p>Enter your unique tracking token to view real-time progress and official municipal updates.</p>
+            <p>Enter your 16-character tracking token to view real-time municipal action, field team dispatches, and public resolution milestones.</p>
         </div>
         """,
         unsafe_allow_html=True,
     )
 
-    token_input = st.text_input(
-        "Enter Tracking Token",
-        placeholder="e.g. CIVIC-XXXX-XXXX",
-        help="Tokens are generated upon complaint submission.",
-    ).strip().upper()
+    t_col1, t_col2 = st.columns([2, 1])
+    with t_col1:
+        query_token = st.text_input(
+            "Enter Tracking Token",
+            placeholder="e.g. CIVIC-A1B2-C3D4",
+            help="Your tracking token was provided when you submitted your complaint.",
+        ).strip().upper()
 
-    col_btn, _ = st.columns([1, 4])
-    with col_btn:
-        btn_refresh = st.button("Check Status", type="primary", use_container_width=True)
+    with t_col2:
+        st.markdown("<br>", unsafe_allow_html=True)
+        search_btn = st.button("🔎 Check Status", type="primary", use_container_width=True)
 
-    if token_input:
-        report = db.get_report_by_token(token_input)
-        if not report:
-            st.error(f"No report found matching token `{token_input}`. Please verify your tracking code.")
+    if query_token or search_btn:
+        if not query_token:
+            st.warning("Please enter a valid tracking token.")
         else:
-            st.markdown("---")
-            # Citizen Report Card
-            status = report["workflow_status"]
-            status_colors = {
-                "Submitted": "#64748b",
-                "Reviewed": "#0284c7",
-                "Assigned": "#d97706",
-                "In progress": "#7c3aed",
-                "Resolved": "#16a34a",
-            }
-            color = status_colors.get(status, "#64748b")
+            report = db.get_report_by_token(query_token)
 
-            st.markdown(
-                f"""
-                <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:8px; padding:1.5rem; margin-bottom:1.5rem; box-shadow:0 1px 3px rgba(0,0,0,0.05);">
-                    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #f1f5f9; padding-bottom:1rem; margin-bottom:1rem;">
-                        <div>
-                            <span style="font-size:0.8rem; color:#64748b; font-weight:600; text-transform:uppercase;">Tracking Token</span>
-                            <div style="font-size:1.6rem; font-weight:800; color:#0f172a; font-family:monospace;">{report['tracking_token']}</div>
-                        </div>
-                        <div style="background:{color}; color:white; padding:0.4rem 1.2rem; border-radius:20px; font-weight:700; font-size:1rem;">
-                            {status}
-                        </div>
-                    </div>
-                    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:1rem; font-size:0.9rem;">
-                        <div><strong>Assigned Department:</strong> {report['assigned_department'] or 'Pending Review'}</div>
-                        <div><strong>Area:</strong> {report['area']}</div>
-                        <div><strong>Category:</strong> {report['citizen_category']}</div>
-                        <div><strong>Submitted Date:</strong> {report['created_at'][:10]} {report['created_at'][11:16]} UTC</div>
-                    </div>
-                    <div style="margin-top:1rem; padding:0.8rem; background:#f8fafc; border-radius:6px; font-size:0.9rem;">
-                        <strong>Summary:</strong> {report['extractive_summary']}
-                    </div>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
-
-            # Confirmed Related Issue Notice (if any)
-            confirmed_related = db.check_has_confirmed_related(report["id"])
-            if confirmed_related:
-                for cr in confirmed_related:
-                    st.info(
-                        f"ℹ️ **Coordinated Response Notice**: This report has been linked with confirmed related report "
-                        f"`{cr['tracking_token']}`. Municipal field teams are coordinating a unified inspection."
-                    )
-
-            # Public Progress Timeline (Chronological, strictly filtering out internal notes)
-            st.markdown("### 📋 Public Progress Timeline")
-            events = db.get_report_events(report["id"], public_only=True)
-
-            if not events:
-                st.write("No progress events recorded yet.")
+            if not report:
+                st.error(f"No grievance found matching token `{query_token}`. Please double-check your token.")
             else:
-                for idx, ev in enumerate(events):
-                    icon = "✅" if ev["event_type"] == "created" else ("🔧" if ev["event_type"] == "assigned" else "📢")
-                    st.markdown(
-                        f"""
-                        <div style="border-left: 3px solid #3b82f6; padding-left: 1rem; margin-left: 0.5rem; margin-bottom: 1rem;">
-                            <div style="font-size:0.8rem; color:#64748b;">{ev['created_at'][:10]} {ev['created_at'][11:16]} UTC</div>
-                            <div style="font-weight:600; color:#1e293b; margin:0.1rem 0;">{icon} {ev['event_type'].replace('_', ' ').title()}</div>
-                            <div style="color:#475569; font-size:0.9rem;">{ev['note']}</div>
-                        </div>
-                        """,
-                        unsafe_allow_html=True,
-                    )
+                status = report["workflow_status"]
+                status_colors = {
+                    "Submitted": "#0284c7",
+                    "Reviewed": "#3b82f6",
+                    "Assigned": "#d97706",
+                    "In progress": "#7c3aed",
+                    "Resolved": "#16a34a",
+                }
+                color = status_colors.get(status, "#64748b")
 
-            st.caption("🔒 Privacy Guarantee: Only public service progress notes are displayed. Internal officer notes are excluded.")
-            st.caption("ℹ️ Demo Notice: Token-based lookup is provided for demonstration purposes. Full identity authentication is not implemented.")
+                st.markdown(
+                    f"""
+                    <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; padding:1.8rem; margin-bottom:1.5rem; box-shadow:0 8px 24px -4px rgba(0,0,0,0.06); animation:fadeInSlideUp 0.5s ease;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #f1f5f9; padding-bottom:1rem; margin-bottom:1.2rem;">
+                            <div>
+                                <span style="font-size:0.75rem; color:#64748b; font-weight:700; text-transform:uppercase; letter-spacing:0.04em;">Official Tracking Token</span>
+                                <div style="font-size:1.8rem; font-weight:800; color:#0f172a; font-family:'JetBrains Mono', monospace;">{report['tracking_token']}</div>
+                            </div>
+                            <div style="background:{color}; color:white; padding:0.45rem 1.4rem; border-radius:24px; font-weight:700; font-size:1rem; box-shadow:0 4px 12px {color}33;">
+                                {status}
+                            </div>
+                        </div>
+                        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:1.2rem; font-size:0.92rem;">
+                            <div><strong>Assigned Department:</strong><br><span style="color:#2563eb; font-weight:600;">{report['assigned_department'] or 'Pending Review'}</span></div>
+                            <div><strong>Mangaluru Ward:</strong><br>{report['area']}</div>
+                            <div><strong>Category:</strong><br>{report['citizen_category']}</div>
+                            <div><strong>Submitted At:</strong><br>{report['created_at'][:10]} {report['created_at'][11:16]} UTC</div>
+                        </div>
+                        <div style="margin-top:1.2rem; padding:1rem; background:#f8fafc; border-radius:8px; font-size:0.92rem; border-left:4px solid #3b82f6;">
+                            <strong>Summary:</strong> {report['extractive_summary']}
+                        </div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+
+                # Confirmed Related Issue Notice (if any)
+                confirmed_related = db.check_has_confirmed_related(report["id"])
+                if confirmed_related:
+                    for cr in confirmed_related:
+                        st.info(
+                            f"ℹ️ **Coordinated Response Notice**: This report has been linked with confirmed related report "
+                            f"`{cr['tracking_token']}`. Mangalore City Corporation field teams are coordinating a unified inspection."
+                        )
+
+                # Public Progress Timeline (Chronological, strictly filtering out internal notes)
+                st.markdown("### 📋 Public Progress Timeline")
+                events = db.get_report_events(report["id"], public_only=True)
+
+                if not events:
+                    st.write("No progress events recorded yet.")
+                else:
+                    for idx, ev in enumerate(events):
+                        icon = "✅" if ev["event_type"] == "created" else ("🔧" if ev["event_type"] == "assigned" else ("📢" if ev["event_type"] == "status_change" else "📝"))
+                        st.markdown(
+                            f"""
+                            <div style="border-left: 3px solid #3b82f6; padding-left: 1.2rem; margin-left: 0.6rem; margin-bottom: 1.2rem;">
+                                <div style="font-size:0.8rem; color:#64748b; font-weight:600;">{ev['created_at'][:10]} {ev['created_at'][11:16]} UTC</div>
+                                <div style="font-weight:700; color:#1e293b; margin:0.15rem 0; font-size:0.95rem;">{icon} {ev['event_type'].replace('_', ' ').title()}</div>
+                                <div style="color:#475569; font-size:0.92rem; background:#f8fafc; padding:0.6rem 0.9rem; border-radius:6px; margin-top:0.3rem;">{ev['note']}</div>
+                            </div>
+                            """,
+                            unsafe_allow_html=True,
+                        )
+
+                st.caption("🔒 Privacy Guarantee: Only verified public municipal progress notes are displayed. Internal officer deliberations are excluded.")

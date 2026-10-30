@@ -80,9 +80,9 @@ def test_safe_reset_and_manual_preservation(temp_db):
         "description": "Manual user submission for test verification.",
         "citizen_category": "Waste",
         "predicted_category": "Waste",
-        "latitude": 12.9716,
-        "longitude": 77.5946,
-        "area": "Oakridge Heights",
+        "latitude": 12.8703,
+        "longitude": 74.8427,
+        "area": "Hampankatta",
     }
     m_id = db.insert_report(manual_rep, db_path=temp_db)
     assert len(db.get_all_reports(temp_db)) == 41

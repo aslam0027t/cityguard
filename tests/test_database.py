@@ -47,7 +47,7 @@ def test_persistence_after_reconnecting(temp_db):
         "extractive_summary": "Deep pothole causing accidents near Central Gate.",
         "latitude": 12.9716,
         "longitude": 77.5946,
-        "area": "Oakridge Heights",
+        "area": "Hampankatta",
         "priority_score": 60,
         "priority_label": "High",
         "priority_reasons": [{"factor": "Immediate Hazard", "points": 60}],
@@ -193,7 +193,7 @@ def test_duplicate_link_no_self_link(temp_db):
         "predicted_category": "Other",
         "latitude": 12.0,
         "longitude": 77.0,
-        "area": "Oakridge Heights",
+        "area": "Hampankatta",
     }
     rep_id = db.insert_report(report_data, db_path=temp_db)
     success = db.record_duplicate_candidate(rep_id, rep_id, 0.95, 10.0, db_path=temp_db)

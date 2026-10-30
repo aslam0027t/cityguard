@@ -20,9 +20,9 @@ def test_real_embedding_model_smoke():
         pytest.skip("SentenceTransformer model is not available or offline. Skipping real-model smoke test.")
 
     # 1. Paraphrase pairs
-    p1 = "Massive deep pothole on Oakridge Main Road near Central Market."
-    p_close = "A deep pothole on Oakridge Main Road near Central Market."
-    p2 = "Huge crater in the asphalt right opposite Central Market entrance."
+    p1 = "Massive deep pothole on Hampankatta K.S. Rao Road near Central Market."
+    p_close = "A deep pothole on Hampankatta K.S. Rao Road near Central Market."
+    p2 = "Huge crater in the asphalt right opposite Central Market entrance on K.S. Rao Road."
 
     # 2. Unrelated issue
     p3 = "Drinking water supply cut completely, no tap water for four days."

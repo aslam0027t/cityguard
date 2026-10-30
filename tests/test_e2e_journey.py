@@ -27,15 +27,15 @@ def test_complete_end_to_end_user_journey(tmp_path, monkeypatch):
     monkeypatch.setattr(db, "DATABASE_PATH", test_db)
     db.init_db(test_db)
 
-    # Seed an existing prior report in Oakridge Heights to verify duplicate candidate linkage
+    # Seed an existing prior report in Hampankatta to verify duplicate candidate linkage
     prior_report_id = db.insert_report({
         "tracking_token": "CIVIC-PRIOR-0001",
         "description": "Deep open crater and asphalt potholes on the road right in front of the school gate.",
         "citizen_category": "Road damage",
         "predicted_category": "Road damage",
-        "latitude": 12.9725,
-        "longitude": 77.5952,
-        "area": "Oakridge Heights",
+        "latitude": 12.8705,
+        "longitude": 74.8429,
+        "area": "Hampankatta",
         "priority_score": 80,
         "priority_label": "High",
         "workflow_status": "Submitted",
@@ -50,9 +50,9 @@ def test_complete_end_to_end_user_journey(tmp_path, monkeypatch):
         "Two children nearly fell in this morning. Immediate danger!"
     )
     citizen_cat = "Road damage"
-    lat = 12.9725
-    lon = 77.5952
-    area = "Oakridge Heights"
+    lat = 12.8705
+    lon = 74.8429
+    area = "Hampankatta"
 
     # Fetch existing reports for duplicate context
     existing_reports = db.get_all_reports()
@@ -118,13 +118,13 @@ def test_complete_end_to_end_user_journey(tmp_path, monkeypatch):
     # STAGE 3: Area-Level Grouping & Action Brief
     # -------------------------------------------------------------
     all_reports = db.get_all_reports()
-    oakridge_reports = [r for r in all_reports if r["area"] == "Oakridge Heights" and r["workflow_status"] != "Resolved"]
-    assert len(oakridge_reports) >= 1
+    hampankatta_reports = [r for r in all_reports if r["area"] == "Hampankatta" and r["workflow_status"] != "Resolved"]
+    assert len(hampankatta_reports) >= 1
 
     # Verify action brief logic computes correctly
     top_cat = analysis["predicted_category"]
-    brief = f"Operational Brief: Oakridge Heights currently has {len(oakridge_reports)} active submissions."
-    assert "Oakridge Heights" in brief
+    brief = f"Operational Brief: Hampankatta currently has {len(hampankatta_reports)} active submissions."
+    assert "Hampankatta" in brief
 
     # -------------------------------------------------------------
     # STAGE 4: Officer Triage & Assignment

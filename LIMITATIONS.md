@@ -21,9 +21,8 @@ CivicAction is an explainable civic complaint triage prototype built for a solo 
 - **Negation Handling**: Conservative regular expressions identify phrases such as *"no hazard"*, *"not dangerous"*, and *"repaired, no hazard"*, preventing unwarranted high-priority scores and flagging uncertain cases for human triage.
 
 ### Demo-Only Elements
-- **Authentication**: Authentication is intentionally omitted for this prototype. The officer view is explicitly labeled: *“Demo officer view — authentication is not implemented.”*
-- **Fictional Municipal Geography**: Demo areas (*Oakridge Heights*, *Maple Riverside*, *Harbor Ward*, *Pineview Central*, *Elmwood Industrial*) and coordinates are synthetic.
-- **No Third-Party Integrations**: No SMS, WhatsApp, email, GIS shapefile servers, or legacy ERP municipal systems are connected.
+- **Municipal Geography**: Mapped to real municipal zones of Mangaluru, Karnataka (*Hampankatta*, *Kadri Hills*, *Lalbagh - Ladyhill*, *Kankanady - Pumpwell*, *Surathkal - Kulai*) with anchor coordinates.
+- **No Third-Party Legacy ERP Integrations**: Official MCC back-office enterprise ERP or billing systems are simulated via the SQLite/Supabase data model.
 
 ---
 

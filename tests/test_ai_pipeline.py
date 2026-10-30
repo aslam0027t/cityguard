@@ -121,7 +121,7 @@ def test_analysis_failure_without_data_loss(monkeypatch):
         citizen_category="Waste",
         latitude=12.0,
         longitude=77.0,
-        area="Oakridge Heights",
+        area="Hampankatta",
     )
     assert result_empty["analysis_status"] == "incomplete"
     assert result_empty["needs_review"] is True
@@ -134,7 +134,7 @@ def test_analysis_failure_without_data_loss(monkeypatch):
         citizen_category="Waste",
         latitude=12.0,
         longitude=77.0,
-        area="Oakridge Heights",
+        area="Hampankatta",
     )
     assert result_crash["analysis_status"] == "incomplete"
     assert result_crash["needs_review"] is True

@@ -19,7 +19,7 @@ def base_report():
         "predicted_category": "Road damage",
         "latitude": 12.9716,
         "longitude": 77.5946,
-        "area": "Oakridge Heights",
+        "area": "Hampankatta",
         "workflow_status": "Submitted",
         "created_at": datetime.now(timezone.utc).isoformat(),
     }
@@ -49,7 +49,7 @@ def test_distance_filtering(base_report):
         # ~1 km away
         "latitude": 12.9800,
         "longitude": 77.6030,
-        "area": "Oakridge Heights",
+        "area": "Hampankatta",
         "workflow_status": "Submitted",
         "created_at": datetime.now(timezone.utc).isoformat(),
     }
@@ -67,7 +67,7 @@ def test_time_window_filtering(base_report):
         "predicted_category": "Road damage",
         "latitude": 12.9717,  # ~15m away
         "longitude": 77.5947,
-        "area": "Oakridge Heights",
+        "area": "Hampankatta",
         "workflow_status": "Submitted",
         "created_at": old_time,
     }
@@ -84,7 +84,7 @@ def test_resolved_report_exclusion(base_report):
         "predicted_category": "Road damage",
         "latitude": 12.9717,
         "longitude": 77.5947,
-        "area": "Oakridge Heights",
+        "area": "Hampankatta",
         "workflow_status": "Resolved",
         "created_at": datetime.now(timezone.utc).isoformat(),
     }
@@ -105,7 +105,7 @@ def test_duplicate_candidate_with_mocked_embeddings(base_report):
         "predicted_category": "Road damage",
         "latitude": 12.9718,  # ~30m away
         "longitude": 77.5948,
-        "area": "Oakridge Heights",
+        "area": "Hampankatta",
         "workflow_status": "Submitted",
         "created_at": datetime.now(timezone.utc).isoformat(),
     }

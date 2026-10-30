@@ -1,13 +1,13 @@
-# CityGuard (CivicAction) 🏛️
-### Explainable Civic Issue Triage & Operational Intelligence
+# CityGuard 🛡️
+### Mangaluru City Corporation (MCC) • Smart Civic Issue Intelligence & Operational Triage
 
-**CivicAction** is a lightweight, local-first civic technology prototype designed for a solo civic-impact hackathon. It converts scattered, unstructured citizen complaints into prioritized, explainable, and trackable public actions.
+**CityGuard** is a modern, responsive, 2026 civic technology platform designed for Mangaluru City Corporation (MCC). It converts scattered, unstructured citizen complaints across Mangaluru's municipal wards into prioritized, explainable, and trackable public actions.
 
 ---
 
 ## 1. Product Journey
 
-1. **Citizen Submits a Complaint**: Description, category, fictional demo area, and coordinates are entered with inline validation.
+1. **Citizen Submits a Complaint**: Description, category, Mangaluru ward area (*Hampankatta*, *Kadri Hills*, *Lalbagh - Ladyhill*, *Kankanady - Pumpwell*, *Surathkal - Kulai*), and verified coordinates are entered with inline validation.
 2. **System Categorizes & Summarizes**: Transparent rule-based keyword matching extracts evidence tokens; extractive summarization selects the salient issue sentence.
 3. **Semantic Duplicate Detection**: Using `sentence-transformers` embeddings, complaints within 150m and 7 days with $\ge 0.80$ cosine similarity are surfaced for human review.
 4. **Explainable Priority Scoring**: Additive policy (+60 immediate hazard, +20 sensitive setting, +20 access disruption, capped at 100) with conservative negation handling.
