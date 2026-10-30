@@ -12,6 +12,7 @@ A premium, enterprise-level 2026 civic-technology platform:
 import os
 import json
 import base64
+import textwrap
 from datetime import datetime, timezone
 from pathlib import Path
 import pandas as pd
@@ -33,20 +34,24 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
+def render_html(html_str: str) -> None:
+    """Safely render raw HTML elements cleanly without Markdown code-block interpretation."""
+    st.html(textwrap.dedent(html_str).strip())
+
 # Professional CITYGUARD Shield + Location-Pin SVG Logo
-CITYGUARD_LOGO_SVG = """
-<svg width="40" height="40" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <path d="M18 3L5 8.5V17.5C5 25.5 10.5 32.5 18 34.5C25.5 32.5 31 25.5 31 17.5V8.5L18 3Z" fill="url(#shield-grad)" stroke="#3B82F6" stroke-width="1.8"/>
-  <circle cx="18" cy="16" r="4.5" fill="#22C55E"/>
-  <path d="M18 10C14.7 10 12 12.7 12 16C12 20.5 18 26.5 18 26.5C18 26.5 24 20.5 24 16C24 12.7 21.3 10 18 10ZM18 18.5C16.6 18.5 15.5 17.4 15.5 16C15.5 14.6 16.6 13.5 18 13.5C19.4 13.5 20.5 14.6 20.5 16C20.5 17.4 19.4 18.5 18 18.5Z" fill="#FFFFFF"/>
-  <defs>
-    <linearGradient id="shield-grad" x1="18" y1="3" x2="18" y2="34.5" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#1E3A8A"/>
-      <stop offset="1" stop-color="#0F172A"/>
-    </linearGradient>
-  </defs>
-</svg>
-"""
+CITYGUARD_LOGO_SVG = (
+    '<svg width="40" height="40" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">'
+    '<path d="M18 3L5 8.5V17.5C5 25.5 10.5 32.5 18 34.5C25.5 32.5 31 25.5 31 17.5V8.5L18 3Z" fill="url(#shield-grad)" stroke="#3B82F6" stroke-width="1.8"/>'
+    '<circle cx="18" cy="16" r="4.5" fill="#22C55E"/>'
+    '<path d="M18 10C14.7 10 12 12.7 12 16C12 20.5 18 26.5 18 26.5C18 26.5 24 20.5 24 16C24 12.7 21.3 10 18 10ZM18 18.5C16.6 18.5 15.5 17.4 15.5 16C15.5 14.6 16.6 13.5 18 13.5C19.4 13.5 20.5 14.6 20.5 16C20.5 17.4 19.4 18.5 18 18.5Z" fill="#FFFFFF"/>'
+    '<defs>'
+    '<linearGradient id="shield-grad" x1="18" y1="3" x2="18" y2="34.5" gradientUnits="userSpaceOnUse">'
+    '<stop stop-color="#1E3A8A"/>'
+    '<stop offset="1" stop-color="#0F172A"/>'
+    '</linearGradient>'
+    '</defs>'
+    '</svg>'
+)
 
 # Enterprise 2026 CSS Theme
 st.markdown(
@@ -330,6 +335,49 @@ st.markdown(
         border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
     }
 
+    /* Segmented Navigation Tab Bar */
+    div[role="radiogroup"] {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        gap: 0.6rem !important;
+        background: #0E1726 !important;
+        padding: 0.45rem 0.65rem !important;
+        border-radius: 12px !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        margin-bottom: 1.5rem !important;
+    }
+    div[role="radiogroup"] label {
+        background: rgba(255, 255, 255, 0.03) !important;
+        border: 1px solid rgba(255, 255, 255, 0.05) !important;
+        padding: 0.5rem 1.15rem !important;
+        border-radius: 8px !important;
+        transition: all 0.2s ease !important;
+        cursor: pointer !important;
+    }
+    div[role="radiogroup"] label:hover {
+        background: rgba(59, 130, 246, 0.15) !important;
+        border-color: rgba(59, 130, 246, 0.4) !important;
+    }
+    div[role="radiogroup"] label[data-checked="true"],
+    div[role="radiogroup"] label:has(input:checked) {
+        background: #3B82F6 !important;
+        border-color: #3B82F6 !important;
+        box-shadow: 0 4px 14px rgba(59, 130, 246, 0.35) !important;
+    }
+    div[role="radiogroup"] label[data-checked="true"] div[data-testid="stMarkdownContainer"] p,
+    div[role="radiogroup"] label:has(input:checked) div[data-testid="stMarkdownContainer"] p {
+        color: #FFFFFF !important;
+        font-weight: 700 !important;
+    }
+    div[role="radiogroup"] input[type="radio"] {
+        display: none !important;
+    }
+    div[role="radiogroup"] div[data-testid="stMarkdownContainer"] p {
+        color: #94A3B8 !important;
+        font-weight: 500 !important;
+        margin: 0 !important;
+    }
+
     /* Footer */
     .cityguard-footer {
         margin-top: 3.5rem;
@@ -361,7 +409,7 @@ def load_cached_model():
 # -------------------------------------------------------------
 # 3. GLOBAL NAVIGATION BAR & BRAND HEADER
 # -------------------------------------------------------------
-st.markdown(
+render_html(
     f"""
     <div style="display:flex; justify-content:space-between; align-items:center; padding:0.8rem 0; border-bottom:1px solid rgba(255,255,255,0.08); margin-bottom:1.5rem;">
         <div style="display:flex; align-items:center; gap:0.9rem;">
@@ -378,23 +426,26 @@ st.markdown(
             </a>
         </div>
     </div>
-    """,
-    unsafe_allow_html=True,
+    """
 )
 
 # Top Responsive Navigation Segment
 nav_options = ["🏠 Home", "📝 Report Issue", "🔍 Track Complaint", "📊 Live Dashboard", "ℹ️ About Us"]
+default_idx = 0
+if "nav_direct" in st.session_state and st.session_state["nav_direct"] in nav_options:
+    default_idx = nav_options.index(st.session_state.pop("nav_direct"))
+
 active_tab = st.radio(
     "Navigation Menu",
     nav_options,
     horizontal=True,
     label_visibility="collapsed",
-    index=0,
+    index=default_idx,
 )
 
 # Sidebar with Officer Admin Access & System Controls
 with st.sidebar:
-    st.markdown(
+    render_html(
         f"""
         <div style="display:flex; align-items:center; gap:0.7rem; margin-bottom:1rem; padding-bottom:0.8rem; border-bottom:1px solid rgba(255,255,255,0.08);">
             {CITYGUARD_LOGO_SVG}
@@ -403,8 +454,7 @@ with st.sidebar:
                 <div style="font-size:0.68rem; color:#3B82F6; font-weight:700;">MCC CIVIC TECH PLATFORM</div>
             </div>
         </div>
-        """,
-        unsafe_allow_html=True,
+        """
     )
 
     st.markdown("##### 🔐 Municipal Portal Access")
@@ -466,15 +516,14 @@ with st.sidebar:
 # VIEW 1: HOME (HERO SECTION & TRUST METRICS)
 # =============================================================
 if active_tab == "🏠 Home":
-    st.markdown(
+    render_html(
         """
         <div class="cityguard-hero-section">
             <div class="hero-badge-mcc">🏛️ Official MCC Civic Action Portal • Mangaluru City Corporation</div>
             <h1>Building a Better Mangaluru<br>Starts With You.</h1>
             <p>Report civic issues, track their progress and help make Mangaluru a cleaner, safer and smarter city with CITYGUARD.</p>
         </div>
-        """,
-        unsafe_allow_html=True,
+        """
     )
 
     # Action Quick Launch Buttons
@@ -488,7 +537,7 @@ if active_tab == "🏠 Home":
             st.session_state["nav_direct"] = "🔍 Track Complaint"
             st.rerun()
 
-    st.markdown("<br>", unsafe_allow_html=True)
+    render_html("<div style='height:1rem;'></div>")
 
     # Real Database Live Metrics Summary
     all_reps = db.get_all_reports()
@@ -499,7 +548,7 @@ if active_tab == "🏠 Home":
     res_percentage = round((resolved_reps / total_reps * 100), 1) if total_reps > 0 else 0
 
     st.markdown("### 📊 Live Municipal Performance Overview")
-    st.markdown(
+    render_html(
         f"""
         <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:1rem; margin-bottom:2rem;">
             <div class="kpi-stat-card">
@@ -523,45 +572,41 @@ if active_tab == "🏠 Home":
                 <div class="kpi-caption">Resolution Efficiency</div>
             </div>
         </div>
-        """,
-        unsafe_allow_html=True,
+        """
     )
 
     # Trust Indicators & Municipal Architecture
     st.markdown("### 🛡️ Why Citizens and Municipal Authorities Trust CITYGUARD")
     t_c1, t_c2, t_c3 = st.columns(3)
     with t_c1:
-        st.markdown(
+        render_html(
             """
             <div class="enterprise-card">
                 <div style="font-size:2rem; margin-bottom:0.5rem;">⚡</div>
                 <h4 style="color:#FFF; margin:0 0 0.4rem 0;">AI Urgency & Explainable Priority</h4>
                 <p style="font-size:0.9rem; line-height:1.5;">Every complaint is mathematically scored (+60 hazard, +20 setting, +20 access) with clear reasons so critical emergencies are addressed first.</p>
             </div>
-            """,
-            unsafe_allow_html=True,
+            """
         )
     with t_c2:
-        st.markdown(
+        render_html(
             """
             <div class="enterprise-card">
                 <div style="font-size:2rem; margin-bottom:0.5rem;">🔗</div>
                 <h4 style="color:#FFF; margin:0 0 0.4rem 0;">Semantic Duplicate Intelligence</h4>
                 <p style="font-size:0.9rem; line-height:1.5;">Nearby reports within 150m are clustered using Sentence Transformers. Individual tracking tokens are never deleted, ensuring unified dispatch.</p>
             </div>
-            """,
-            unsafe_allow_html=True,
+            """
         )
     with t_c3:
-        st.markdown(
+        render_html(
             """
             <div class="enterprise-card">
                 <div style="font-size:2rem; margin-bottom:0.5rem;">🔒</div>
                 <h4 style="color:#FFF; margin:0 0 0.4rem 0;">Citizen Privacy Guarantee</h4>
                 <p style="font-size:0.9rem; line-height:1.5;">Public progress timelines show only verified municipal milestones. Internal officer notes, budgets, and personal citizen contact details remain strictly private.</p>
             </div>
-            """,
-            unsafe_allow_html=True,
+            """
         )
 
 
@@ -569,15 +614,14 @@ if active_tab == "🏠 Home":
 # VIEW 2: REPORT AN ISSUE (COMPLAINT REPORTING SYSTEM)
 # =============================================================
 elif active_tab == "📝 Report Issue":
-    st.markdown(
+    render_html(
         """
         <div class="cityguard-hero-section">
             <div class="hero-badge-mcc">📝 Mangaluru City Corporation • Citizen Grievance Portal</div>
             <h1>Report a Civic Issue</h1>
             <p>Submit your complaint directly to Mangaluru City Corporation. CITYGUARD uses AI to categorize, summarize, and prioritize urgent safety hazards in real-time.</p>
         </div>
-        """,
-        unsafe_allow_html=True,
+        """
     )
 
     f_col, p_col = st.columns([1.5, 1], gap="large")
@@ -595,14 +639,13 @@ elif active_tab == "📝 Report Issue":
         st.session_state.p_lon = config.DEMO_AREAS[st.session_state.p_area]["lon"]
 
     with p_col:
-        st.markdown(
+        render_html(
             """
             <div class="enterprise-card">
                 <h4 style="margin:0 0 0.4rem 0; color:#FFF;">📍 Mangaluru Landmark Quick-Fill</h4>
                 <p style="font-size:0.86rem; color:#94A3B8; margin-bottom:0.8rem;">Click a recognized landmark to automatically populate verified coordinates:</p>
             </div>
-            """,
-            unsafe_allow_html=True,
+            """
         )
 
         for p in config.SAMPLE_COORDINATES:
@@ -747,7 +790,7 @@ elif active_tab == "📝 Report Issue":
                         )
 
                 # Modern Success Receipt Card
-                st.markdown(
+                render_html(
                     f"""
                     <div style="background:#16243A; border:1px solid #22C55E; border-radius:14px; padding:1.6rem; margin-top:1.5rem; animation:fadeInSlide 0.5s ease;">
                         <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:1rem; margin-bottom:1.2rem;">
@@ -763,8 +806,7 @@ elif active_tab == "📝 Report Issue":
                             <strong>✅ Your complaint has been recorded in the Mangaluru City Corporation system.</strong> You can track live field updates under <strong>Track Complaint</strong>.
                         </p>
                     </div>
-                    """,
-                    unsafe_allow_html=True,
+                    """
                 )
 
                 # AI Explainability Receipt Expander
@@ -773,7 +815,8 @@ elif active_tab == "📝 Report Issue":
                     with rc1:
                         st.markdown("**Rule-Based Classification**")
                         st.write(f"`{analysis['predicted_category']}`")
-                        ev_list = json.loads(analysis["category_evidence"])
+                        raw_ev = analysis.get("category_evidence", [])
+                        ev_list = json.loads(raw_ev) if isinstance(raw_ev, str) else (raw_ev or [])
                         if ev_list:
                             st.caption(f"Matched keyword evidence: {', '.join(ev_list)}")
                     with rc2:
@@ -784,9 +827,10 @@ elif active_tab == "📝 Report Issue":
                         pl = analysis["priority_label"]
                         ps = analysis["priority_score"]
                         chip_class = "chip-high chip-high-glow" if pl == "High" else ("chip-medium" if pl == "Medium" else "chip-low")
-                        st.markdown(f"<span class='chip-pill {chip_class}'>{pl} ({ps}/100)</span>", unsafe_allow_html=True)
+                        render_html(f"<span class='chip-pill {chip_class}'>{pl} ({ps}/100)</span>")
 
-                    reasons = json.loads(analysis["priority_reasons"])
+                    raw_reasons = analysis.get("priority_reasons", [])
+                    reasons = json.loads(raw_reasons) if isinstance(raw_reasons, str) else (raw_reasons or [])
                     if reasons:
                         st.markdown("**Point Allocation Factors:**")
                         for r in reasons:
@@ -804,15 +848,14 @@ elif active_tab == "📝 Report Issue":
 # VIEW 3: TRACK COMPLAINT (CITIZEN TRACKING)
 # =============================================================
 elif active_tab == "🔍 Track Complaint":
-    st.markdown(
+    render_html(
         """
         <div class="cityguard-hero-section">
             <div class="hero-badge-mcc">🔍 Live Citizen Tracking Portal • Mangaluru City Corporation</div>
             <h1>Track Your Complaint</h1>
             <p>Enter your 16-character CITYGUARD tracking ID to view real-time department assignments, field team dispatches, and public resolution milestones.</p>
         </div>
-        """,
-        unsafe_allow_html=True,
+        """
     )
 
     tc1, tc2 = st.columns([2, 1])
@@ -822,7 +865,7 @@ elif active_tab == "🔍 Track Complaint":
             placeholder="e.g. CIVIC-A1B2-C3D4",
         ).strip().upper()
     with tc2:
-        st.markdown("<br>", unsafe_allow_html=True)
+        render_html("<div style='height:1.75rem;'></div>")
         search_clicked = st.button("🔎 Look Up Status", type="primary", use_container_width=True)
 
     if query_token or search_clicked:
@@ -843,7 +886,7 @@ elif active_tab == "🔍 Track Complaint":
                 }
                 badge_col = status_colors.get(stat, "#64748B")
 
-                st.markdown(
+                render_html(
                     f"""
                     <div class="enterprise-card" style="border:1px solid {badge_col};">
                         <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:1rem; margin-bottom:1.2rem;">
@@ -865,8 +908,7 @@ elif active_tab == "🔍 Track Complaint":
                             <strong style="color:#FFF;">Summary:</strong> {rep['extractive_summary']}
                         </div>
                     </div>
-                    """,
-                    unsafe_allow_html=True,
+                    """
                 )
 
                 # Confirmed Related Duplicate Warning
@@ -886,15 +928,14 @@ elif active_tab == "🔍 Track Complaint":
                 else:
                     for ev in events:
                         icon = "✅" if ev["event_type"] == "created" else ("🔧" if ev["event_type"] == "assigned" else ("📢" if ev["event_type"] == "status_change" else "📝"))
-                        st.markdown(
+                        render_html(
                             f"""
                             <div style="border-left: 3px solid #3B82F6; padding-left: 1.2rem; margin-left: 0.6rem; margin-bottom: 1.2rem;">
                                 <div style="font-size:0.8rem; color:#94A3B8; font-weight:600;">{ev['created_at'][:10]} {ev['created_at'][11:16]} UTC</div>
                                 <div style="font-weight:700; color:#FFFFFF; margin:0.15rem 0; font-size:0.95rem;">{icon} {ev['event_type'].replace('_', ' ').title()}</div>
                                 <div style="color:#CBD5E1; font-size:0.92rem; background:rgba(255,255,255,0.03); padding:0.6rem 0.9rem; border-radius:6px; margin-top:0.3rem;">{ev['note']}</div>
                             </div>
-                            """,
-                            unsafe_allow_html=True,
+                            """
                         )
 
                 st.caption("🔒 Privacy Guarantee: Only verified public municipal progress milestones are displayed. Internal officer deliberations are excluded.")
@@ -904,15 +945,14 @@ elif active_tab == "🔍 Track Complaint":
 # VIEW 4: LIVE DASHBOARD (ANALYTICS, MAP & TRIAGE)
 # =============================================================
 elif active_tab == "📊 Live Dashboard":
-    st.markdown(
+    render_html(
         """
         <div class="cityguard-hero-section">
             <div class="hero-badge-mcc">📊 Mangaluru City Corporation • Live Intelligence & Operations</div>
             <h1>CITYGUARD Live Dashboard</h1>
             <p>Real-time municipal grievance data, ward clustering, and action briefs across Mangaluru's municipal wards.</p>
         </div>
-        """,
-        unsafe_allow_html=True,
+        """
     )
 
     all_reports = db.get_all_reports()
@@ -939,7 +979,7 @@ elif active_tab == "📊 Live Dashboard":
         resolved_reps = len(df[df["workflow_status"] == "Resolved"])
         needs_review_reps = len(df[df["needs_review"] == 1])
 
-        st.markdown(
+        render_html(
             f"""
             <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap:1rem; margin-bottom:1.5rem;">
                 <div class="kpi-stat-card">
@@ -967,8 +1007,7 @@ elif active_tab == "📊 Live Dashboard":
                     <div class="kpi-caption">Needs Review</div>
                 </div>
             </div>
-            """,
-            unsafe_allow_html=True,
+            """
         )
 
         # Ward Selection & Action Brief
@@ -1025,7 +1064,7 @@ elif active_tab == "📊 Live Dashboard":
         }
         rec_dept = dept_recs.get(w_top_cat, "General Municipal Cell")
 
-        st.markdown(
+        render_html(
             f"""
             <div class="brief-panel">
                 <h4>📋 Operational Brief: {selected_ward_filter}</h4>
@@ -1036,8 +1075,7 @@ elif active_tab == "📊 Live Dashboard":
                     • <strong>Recommended Response:</strong> Deploy <strong>{rec_dept}</strong> for combined route inspection.
                 </div>
             </div>
-            """,
-            unsafe_allow_html=True,
+            """
         )
 
         # Interactive Map & Queue Filters
@@ -1140,21 +1178,20 @@ elif active_tab == "📊 Live Dashboard":
 # VIEW 5: ABOUT US & CITIZEN FAQ
 # =============================================================
 elif active_tab == "ℹ️ About Us":
-    st.markdown(
+    render_html(
         """
         <div class="cityguard-hero-section">
             <div class="hero-badge-mcc">ℹ️ About CITYGUARD • Mangaluru City Corporation (MCC)</div>
             <h1>About CITYGUARD</h1>
             <p>Empowering citizens and municipal engineers across Mangaluru with transparent, AI-prioritized civic action.</p>
         </div>
-        """,
-        unsafe_allow_html=True,
+        """
     )
 
     a1, a2 = st.columns([1.3, 1], gap="large")
 
     with a1:
-        st.markdown(
+        render_html(
             """
             <div class="enterprise-card">
                 <h3 style="color:#FFF; margin-top:0;">Our Mission</h3>
@@ -1172,12 +1209,11 @@ elif active_tab == "ℹ️ About Us":
                     <li><strong>Surathkal - Kulai</strong> (Coastal Highway, NITK Corridor & Industrial Zone)</li>
                 </ul>
             </div>
-            """,
-            unsafe_allow_html=True,
+            """
         )
 
     with a2:
-        st.markdown(
+        render_html(
             """
             <div class="enterprise-card">
                 <h3 style="color:#FFF; margin-top:0;">MCC Civic Action Desk</h3>
@@ -1193,8 +1229,7 @@ elif active_tab == "ℹ️ About Us":
                     • <strong>Email:</strong> complaints@mangalurucity.gov.in
                 </div>
             </div>
-            """,
-            unsafe_allow_html=True,
+            """
         )
 
     st.markdown("### ❓ Frequently Asked Questions")
@@ -1209,7 +1244,7 @@ elif active_tab == "ℹ️ About Us":
     with st.expander("What happens when multiple citizens report the same issue?"):
         st.write(
             "CITYGUARD computes 384-dimensional semantic vectors using local Sentence Transformers. "
-            "Complaints within 150 metres and 7 days with $\ge 0.80$ similarity are linked as related items. "
+            "Complaints within 150 metres and 7 days with ≥ 0.80 similarity are linked as related items. "
             "Every citizen maintains their individual tracking token and receives updates when the shared problem is resolved."
         )
     with st.expander("How can I track the progress of my complaint?"):
@@ -1222,7 +1257,7 @@ elif active_tab == "ℹ️ About Us":
 # -------------------------------------------------------------
 # 4. ENTERPRISE FOOTER
 # -------------------------------------------------------------
-st.markdown(
+render_html(
     f"""
     <div class="cityguard-footer">
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1.2rem; margin-bottom:1.5rem;">
@@ -1247,6 +1282,5 @@ st.markdown(
             </div>
         </div>
     </div>
-    """,
-    unsafe_allow_html=True,
+    """
 )
